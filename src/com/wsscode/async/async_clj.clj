@@ -46,9 +46,9 @@
   "Puts result of body on the provided channel if non-nil, else it closes it.
   A workaround to allow communicating nils."
   [ch & body]
-  `(if-some [res# (catch-all ~@body)]
-     (async/put! ~ch res#)
-     (async/close! ~ch)))
+  `(do (when-some [res# (catch-all ~@body)]
+         (async/put! ~ch res#))
+       (async/close! ~ch)))
 
 (defmacro go-promise
   "Creates a go block using a promise channel, so the output of the go block can be

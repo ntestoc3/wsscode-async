@@ -23,15 +23,16 @@
 
 (defmacro go-promise
   "Creates a go block using a promise channel, so the output of the go block can be
-  read any number of times once ready."
+  read any number of times once ready.
+  the chan will closed after body run over."
   [& body]
   `(let [ch# (async/promise-chan)]
      (async/go
-       (if-some [res# (try
-                        ~@body
-                        (catch :default e# e#))]
-         (async/put! ch# res#)
-         (async/close! ch#)))
+       (when-some [res# (try
+                          ~@body
+                          (catch :default e# e#))]
+         (async/put! ch# res#))
+       (async/close! ch#))
      ch#))
 
 (defmacro <!
